@@ -50,5 +50,6 @@ VisuaCode/
 │   ├── theme.js        — Theme and UI manager
 │   └── app.js          — Main controller & state management
 └── README.md
+--
 
 *Author:** Dasarath Mali
