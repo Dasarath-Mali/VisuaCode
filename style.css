@@ -614,10 +614,177 @@ html, body {
 
 .out-sub { font-size: 11px; color: var(--text3); }
 
-.output-line { display: block; white-space: pre-wrap; word-break: break-all; }
-.output-error { color: var(--red); }
+/* ── STDIN PANEL ── */
+.stdin-panel {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.stdin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.stdin-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.stdin-icon { font-size: 13px; }
+
+.stdin-hint {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent3);
+  background: var(--accentglow);
+  padding: 1px 7px;
+  border-radius: 10px;
+  border: 1px solid var(--accent);
+  animation: pulse-badge 2s ease-in-out infinite;
+  display: none;
+}
+.stdin-hint.visible { display: inline; }
+
+@keyframes pulse-badge {
+  0%,100% { opacity:1; }
+  50%      { opacity:.6; }
+}
+
+.stdin-actions { display: flex; gap: 6px; align-items: center; }
+
+.stdin-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.stdin-toggle-btn:hover { color: var(--accent3); background: var(--accentglow); }
+.stdin-toggle-btn.collapsed { transform: rotate(-90deg); }
+
+.stdin-body {
+  padding: 0 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+  max-height: 160px;
+  transition: max-height 0.25s ease, padding 0.25s ease, opacity 0.2s;
+  opacity: 1;
+}
+.stdin-body.hidden {
+  max-height: 0;
+  padding-bottom: 0;
+  opacity: 0;
+}
+
+.stdin-textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-sm);
+  padding: 9px 11px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text1);
+  resize: vertical;
+  min-height: 56px;
+  max-height: 120px;
+  outline: none;
+  box-shadow:
+    inset 2px 2px 6px var(--clay-inset),
+    inset -1px -1px 4px var(--neu-light);
+  transition: border-color 0.2s;
+  caret-color: var(--accent);
+}
+.stdin-textarea:focus {
+  border-color: var(--accent);
+  box-shadow:
+    inset 2px 2px 6px var(--clay-inset),
+    inset -1px -1px 4px var(--neu-light),
+    0 0 0 2px var(--accentglow);
+}
+.stdin-textarea::placeholder { color: var(--text3); font-style: italic; }
+
+.stdin-tips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stdin-tip-item {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Interactive output lines */
+.output-stdin-echo {
+  color: var(--accent3);
+  opacity: 0.7;
+  font-style: italic;
+  border-left: 2px solid var(--accent);
+  padding-left: 8px;
+  margin: 2px 0;
+  display: block;
+}
+
+.output-section-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin: 8px 0 4px;
+  padding: 4px 8px;
+  background: var(--bg3);
+  border-radius: 4px;
+  border-left: 2px solid var(--border2);
+}
+
+.output-section-label.is-stdin { border-left-color: var(--accent); color: var(--accent3); }
+.output-section-label.is-stdout { border-left-color: var(--green); color: var(--green); }
+.output-section-label.is-stderr { border-left-color: var(--red); color: var(--red); }
+
+/* Animate output lines appearing */
+.output-line {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-all;
+  animation: lineAppear 0.15s ease both;
+}
+@keyframes lineAppear {
+  from { opacity:0; transform:translateX(-4px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+
+.output-error   { color: var(--red); }
 .output-success { color: var(--green); }
-.output-meta { color: var(--text3); font-size: 10px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+.output-meta    { color: var(--text3); font-size: 10px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+
+
 
 /* Quick actions */
 .quick-actions {

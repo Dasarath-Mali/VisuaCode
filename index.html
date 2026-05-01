@@ -106,6 +106,32 @@
               <button class="chip-btn" id="clearOutputBtn">Clear</button>
             </div>
           </div>
+
+          <!-- STDIN panel -->
+          <div class="stdin-panel" id="stdinPanel">
+            <div class="stdin-header">
+              <span class="stdin-label">
+                <span class="stdin-icon">⌨</span>
+                Standard Input <span class="stdin-hint" id="stdinHint"></span>
+              </span>
+              <div class="stdin-actions">
+                <button class="stdin-toggle-btn" id="stdinToggle" title="Show/hide stdin">▾</button>
+              </div>
+            </div>
+            <div class="stdin-body" id="stdinBody">
+              <textarea
+                id="stdinInput"
+                class="stdin-textarea"
+                placeholder="Type program input here, one value per line&#10;e.g. for input('Enter name: ') → type: Alice"
+                rows="3"
+                spellcheck="false"
+              ></textarea>
+              <div class="stdin-tips" id="stdinTips">
+                <span class="stdin-tip-item" id="tipDetected"></span>
+              </div>
+            </div>
+          </div>
+
           <div class="output-shell" id="outputShell">
             <div class="output-placeholder">
               <div class="out-icon">▶</div>
