@@ -4,7 +4,7 @@
 const Analyzer = (() => {
 
   const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-  const MODEL    = 'llama-3.3-70b-versatile';
+  const MODEL    = 'llama-3.3-70b-versatile'; // Must use the 70B model for complex JSON generation
 
   // ── EXPLAIN ─────────────────────────────────────────────────────────
   async function explain(code, language, apiKey) {
@@ -39,7 +39,6 @@ ${code}
   }
 
   // ── VISUALIZE ────────────────────────────────────────────────────────
-  // NEW: Added stdinText as the 4th parameter
   async function visualize(code, language, apiKey, stdinText = '') {
     const prompt = `You are a code visualization expert. Analyze this ${language} code and determine what data structure or algorithm it represents. Return ONLY valid JSON — no markdown, no extra text.
 
@@ -158,7 +157,7 @@ ${code}
       body: JSON.stringify({
         model: MODEL,
         max_tokens: maxTokens,
-        temperature: 0.05, // Lowered temperature to force strict adherence to your inputs
+        temperature: 0.05, // Ultra-low temperature forces strict adherence to inputs
         messages: [{ role: 'user', content: prompt }]
       })
     });

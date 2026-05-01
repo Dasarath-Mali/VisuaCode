@@ -3,7 +3,7 @@
 const Agent = (() => {
 
   const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-  const MODEL    = 'llama-3.1-8b-instant';
+  const MODEL    = 'llama-3.1-8b-instant'; // Fast, token-efficient model for chat
 
   let _code = '', _lang = '', _summary = '';
 
@@ -16,7 +16,7 @@ const Agent = (() => {
     if (!_code.trim()) return { outOfScope: true, message: 'No code analyzed yet. Paste code and click Analyze first.' };
     if (!apiKey)       return { error: true, message: 'No Groq API key set. Click ⚙ to add it.' };
 
-    // FIX: Inject explicit line numbers into the code so the AI doesn't have to guess or count blindly.
+    // Inject explicit line numbers into the code so the AI doesn't have to guess or count blindly.
     const numberedCode = _code.split('\n').map((line, idx) => `${idx + 1} | ${line}`).join('\n');
 
     const system = `You are a precise code Q&A agent. Answer ONLY from the ${_lang} code provided.
@@ -62,7 +62,7 @@ ${numberedCode}
 
     if (role === 'bot') {
       const av = document.createElement('div');
-      av.className = 'bot-avatar'; av.textContent = '◉';
+      av.className = 'bot-avatar'; av.textContent = '✦'; 
       row.appendChild(av);
     }
 
@@ -83,7 +83,7 @@ ${numberedCode}
     row.id = 'typingRow';
 
     const av = document.createElement('div');
-    av.className = 'bot-avatar'; av.textContent = '◉';
+    av.className = 'bot-avatar'; av.textContent = '✦';
 
     const bubble = document.createElement('div');
     bubble.className = 'agent-bubble';

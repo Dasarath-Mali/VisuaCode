@@ -3,9 +3,8 @@
 const App = (() => {
 
   // ── State ─────────────────────────────────────────────────────────────
-  // WARNING: Do not push this default key to a public GitHub repository!
-  const DEFAULT_API_KEY = 'gsk_your_default_key_here'; 
-  
+  // 🔒 SECURE VERCEL ARCHITECTURE: 
+  // No more hardcoded default key! The Vercel backend handles the fallback securely.
   let userApiKey   = localStorage.getItem('vc_groq') || '';
   let explainData  = null;
   let vizData      = null;
@@ -62,10 +61,6 @@ const App = (() => {
   const groqKeyInput   = $('groqKeyInput');
   const apiBanner      = $('apiBanner');
   const openSettingsBtn= $('openSettingsBtn');
-
-  function getActiveKey() {
-    return userApiKey || DEFAULT_API_KEY;
-  }
 
   // ── INIT ──────────────────────────────────────────────────────────────
   function init() {
@@ -186,12 +181,6 @@ const App = (() => {
     const code = codeInput.value.trim();
     if (!code) { toast('Paste some code first', 'error'); return; }
 
-    const activeKey = getActiveKey();
-    if (!activeKey) {
-      showApiKeyModal(true);
-      return;
-    }
-
     const userStdin = stdinInput ? stdinInput.value.trim() : '';
 
     Runner.renderRunning();
@@ -199,13 +188,14 @@ const App = (() => {
     runBtn.textContent = 'Running...';
 
     try {
-      const res = await Runner.run(code, detectedLang.lang, userStdin, activeKey);
+      // If userApiKey is empty, it sends an empty string, allowing the Vercel backend to use the default key
+      const res = await Runner.run(code, detectedLang.lang, userStdin, userApiKey);
       Runner.renderResult(res);
     } catch (err) {
       const errorMsg = err.message.toLowerCase();
       if (errorMsg.includes('429') || errorMsg.includes('rate limit')) {
         Runner.renderError("API Limit reached. Please update your key.");
-        showApiKeyModal(!userApiKey); // Trigger Modal
+        showApiKeyModal(!userApiKey);
       } else {
         Runner.renderError(err.message);
       }
@@ -242,12 +232,6 @@ const App = (() => {
   async function analyze() {
     const code = codeInput.value.trim();
     if (!code) { toast('Paste some code first', 'error'); return; }
-    
-    const activeKey = getActiveKey();
-    if (!activeKey) { 
-      showApiKeyModal(true);
-      return; 
-    }
 
     const userStdin = stdinInput ? stdinInput.value.trim() : '';
 
@@ -275,9 +259,10 @@ const App = (() => {
       } else {
         setStatus('running', 'Fetching explanation + visualization…');
         
+        // If userApiKey is empty, Vercel backend will use the default key
         const [exp, viz] = await Promise.all([
-          Analyzer.explain(code, detectedLang.lang, activeKey),
-          Analyzer.visualize(code, detectedLang.lang, activeKey, userStdin)
+          Analyzer.explain(code, detectedLang.lang, userApiKey),
+          Analyzer.visualize(code, detectedLang.lang, userApiKey, userStdin)
         ]);
 
         explainData = exp;
@@ -310,7 +295,7 @@ const App = (() => {
       const errorMsg = err.message.toLowerCase();
       if (errorMsg.includes('429') || errorMsg.includes('rate limit')) {
         Explainer.renderError("API Limit reached. Please update your key.");
-        showApiKeyModal(!userApiKey); // Trigger Modal
+        showApiKeyModal(!userApiKey);
       } else {
         Explainer.renderError(`Error: ${err.message}`);
         toast(err.message, 'error');
@@ -417,10 +402,8 @@ const App = (() => {
     Agent.addMessage('user', q);
     Agent.addTyping();
 
-    const activeKey = getActiveKey();
-
     try {
-      const res = await Agent.ask(q, activeKey);
+      const res = await Agent.ask(q, userApiKey);
       Agent.removeTyping();
       if (res.error)       Agent.addMessage('bot', res.message, 'is-error');
       else if (res.outOfScope) Agent.addMessage('bot', res.message, 'out-of-scope');
@@ -430,7 +413,7 @@ const App = (() => {
       const errorMsg = err.message.toLowerCase();
       if (errorMsg.includes('429') || errorMsg.includes('rate limit')) {
          Agent.addMessage('bot', "API limit reached! Please update your key.", 'is-error');
-         showApiKeyModal(!userApiKey); // Trigger Modal
+         showApiKeyModal(!userApiKey);
       } else {
         Agent.addMessage('bot', `Error: ${err.message}`, 'is-error');
       }
@@ -490,7 +473,8 @@ const App = (() => {
   }
 
   function updateBanner() {
-    apiBanner.style.display = (userApiKey || DEFAULT_API_KEY) ? 'none' : 'flex';
+    // Only show the banner if the user hasn't provided a personal key
+    apiBanner.style.display = userApiKey ? 'none' : 'flex';
   }
 
   function toast(msg, type = 'info') {
@@ -507,9 +491,8 @@ const App = (() => {
     }, 2600);
   }
 
-  // ✨ NEW: Dynamic Pop-up Modal for Rate Limits
   function showApiKeyModal(isDemoLimit) {
-    if (document.getElementById('apiModalOverlay')) return; // Prevent duplicates
+    if (document.getElementById('apiModalOverlay')) return;
 
     const overlay = document.createElement('div');
     overlay.id = 'apiModalOverlay';
@@ -549,7 +532,6 @@ const App = (() => {
     overlay.appendChild(card);
     document.body.appendChild(overlay);
 
-    // Trigger animations
     requestAnimationFrame(() => {
       overlay.style.opacity = '1';
       card.style.transform = 'translateY(0)';
@@ -572,7 +554,7 @@ const App = (() => {
       
       userApiKey = k;
       localStorage.setItem('vc_groq', k);
-      groqKeyInput.value = k; // Update the settings page input too
+      groqKeyInput.value = k;
       updateBanner();
       toast('API key saved! You can run your code now.', 'success');
       closeModal();
