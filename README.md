@@ -118,15 +118,11 @@ VisuaCode/
 └── README.md
 ```
 
-#🛠 Tech Stack
-Frontend: Pure HTML / CSS / Vanilla JS (No build tools required)
+# 🛠 Tech Stack
+**Frontend**: Pure HTML / CSS / Vanilla JS (No build tools required)
+**Backend**: Vercel Serverless (Node.js)
+**3D Graphics**: Three.js r128 (CDN)
+**AI Models**: Groq llama-3.3-70b-versatile (Analysis) & llama-3.1-8b-instant (Agent & Runner)
+**Typography**: Cabinet Grotesk & JetBrains Mono
 
-Backend: Vercel Serverless (Node.js)
-
-3D Graphics: Three.js r128 (CDN)
-
-AI Models: Groq llama-3.3-70b-versatile (Analysis) & llama-3.1-8b-instant (Agent & Runner)
-
-Typography: Cabinet Grotesk & JetBrains Mono
-
-Author: Dasarath Mali
+**Author**: Dasarath Mali
