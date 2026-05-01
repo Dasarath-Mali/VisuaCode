@@ -1394,83 +1394,123 @@ html, body {
 @keyframes spin { to { transform:rotate(360deg); } }
 
 /* ═══════════════════════════════════
-   TOAST
+   TOAST NOTIFICATIONS
 ═══════════════════════════════════ */
 
 .toast-stack {
   position: fixed;
-  top: 68px;
-  right: 18px;
+  bottom: 24px; /* Moved to bottom right to avoid blocking top buttons */
+  right: 24px;
+  top: auto;
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   pointer-events: none;
 }
 
 .toast {
-  background: var(--surface);
+  background: linear-gradient(135deg, var(--surface), var(--bg3));
   border: 1px solid var(--border2);
-  border-radius: var(--r);
-  padding: 12px 18px;
+  border-radius: var(--r-sm);
+  padding: 14px 20px 14px 24px;
+  font-family: var(--font-ui);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text1);
   box-shadow:
-    6px 6px 20px var(--neu-dark),
-    -2px -2px 10px var(--neu-light);
-  animation: toastIn 0.3s ease;
+    8px 8px 24px var(--neu-dark),
+    -2px -2px 12px var(--neu-light),
+    inset 0 1px 0 var(--border2);
+  animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   pointer-events: all;
-  min-width: 220px;
+  min-width: 260px;
+  max-width: 350px;
+  position: relative;
+  overflow: hidden;
+  line-height: 1.5;
 }
-.toast.success { border-left: 3px solid var(--green); }
-.toast.error   { border-left: 3px solid var(--red); }
-.toast.info    { border-left: 3px solid var(--blue); }
-@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+
+/* Glowing neon strip on the left */
+.toast::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+/* Semantic Toast Colors */
+.toast.success { border-color: rgba(0, 255, 136, 0.3); }
+.toast.success::before { background: var(--green); box-shadow: 0 0 12px var(--green); }
+
+.toast.error { border-color: rgba(255, 51, 102, 0.3); }
+.toast.error::before { background: var(--red); box-shadow: 0 0 12px var(--red); }
+
+.toast.info { border-color: rgba(0, 170, 255, 0.3); }
+.toast.info::before { background: var(--blue); box-shadow: 0 0 12px var(--blue); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 /* ═══════════════════════════════════
-   API BANNER
+   API BANNER (Floating Pop)
 ═══════════════════════════════════ */
 
 .api-banner {
   position: fixed;
-  bottom: 20px;
-  left: calc(var(--sidebar-w) + 20px);
-  right: 20px;
-  background: var(--surface);
-  border: 1px solid var(--yellow);
+  bottom: 24px;
+  left: calc(var(--sidebar-w) + 24px);
+  right: auto;
+  max-width: 500px; /* Floats nicely instead of stretching 100% width */
+  background: linear-gradient(135deg, var(--surface), var(--surface2));
+  border: 1px solid rgba(255, 214, 10, 0.4);
   border-radius: var(--r);
-  padding: 11px 18px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 12px;
+  gap: 16px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--yellow);
   z-index: 300;
   box-shadow:
-    6px 6px 20px var(--neu-dark),
-    0 0 20px rgba(255,214,10,0.15);
-  animation: slideUp 0.4s ease;
+    8px 8px 24px var(--neu-dark),
+    -2px -2px 12px var(--neu-light),
+    inset 0 1px 0 rgba(255, 214, 10, 0.15),
+    0 0 24px rgba(255, 214, 10, 0.1);
+  animation: slideUpBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .api-banner button {
-  background: var(--yellow);
+  background: linear-gradient(135deg, var(--yellow), #e6c200);
   color: #000;
   border: none;
-  padding: 5px 16px;
+  padding: 7px 18px;
   border-radius: var(--r-sm);
   font-weight: 900;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
   font-family: var(--font-ui);
   flex-shrink: 0;
-  box-shadow: 2px 2px 8px var(--neu-dark);
-  transition: opacity 0.2s;
+  box-shadow: 3px 3px 10px var(--neu-dark), inset 0 1px 0 rgba(255,255,255,0.4);
+  transition: all 0.2s;
 }
-.api-banner button:hover { opacity:.85; }
 
+.api-banner button:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 14px var(--neu-dark), 0 0 15px rgba(255,214,10,0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+@keyframes slideUpBounce {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 /* ═══════════════════════════════════
    RESPONSIVE
 ═══════════════════════════════════ */

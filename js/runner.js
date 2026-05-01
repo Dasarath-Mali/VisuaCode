@@ -1,13 +1,12 @@
 // ===== CODE RUNNER (AI SIMULATOR) =====
-// Piston API is whitelist-only. This uses the Groq API to simulate execution.
-// Features an ultra-strict prompt to force adherence to stdin inputs.
+// Uses Groq API to simulate execution.
+// Supports stdin, detects input() calls, animates output
 
 const Runner = (() => {
 
   const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-  const MODEL    = 'llama-3.1-8b-instant'; // If logic fails, change back to: llama-3.3-70b-versatile
+  const MODEL    = 'llama-3.1-8b-instant'; // Use 8B for fast simulation
 
-  // ── INPUT DETECTION PATTERNS per language ──────────────────────────────
   const INPUT_PATTERNS = {
     'Python':     [/\binput\s*\(/,         /sys\.stdin/,        /raw_input\s*\(/],
     'JavaScript': [/readline\s*\(/,        /process\.stdin/,    /prompt\s*\(/],
@@ -26,7 +25,6 @@ const Runner = (() => {
     'Dart':       [/stdin\.readLineSync/,  /io\.stdin/],
   };
 
-  // ── TIPS per language ──────────────────────────────────────────────────
   const INPUT_TIPS = {
     'Python':     'input() detected — one value per line',
     'JavaScript': 'readline() detected — one value per line',
@@ -45,17 +43,15 @@ const Runner = (() => {
     'Dart':       'stdin.readLineSync detected — one value per line',
   };
 
-  // ── DETECT if code needs input ─────────────────────────────────────────
   function detectsInput(code, lang) {
     const patterns = INPUT_PATTERNS[lang] || [];
     return patterns.some(p => p.test(code));
   }
 
-  // ── MAIN RUN (AI SIMULATION) ──────────────────────────────────────────
-  async function run(code, detectedLang, stdinText = '') {
-    const apiKey = localStorage.getItem('vc_groq');
+  // ── MAIN RUN (Accepts apiKey as the 4th parameter now) ──
+  async function run(code, detectedLang, stdinText = '', apiKey) {
     if (!apiKey) {
-      throw new Error("Groq API key required. Please set it in Settings to simulate execution.");
+      throw new Error("Groq API key required. Please set it in Settings.");
     }
 
     const start = performance.now();
@@ -91,7 +87,7 @@ Format:
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 1500,
-        temperature: 0.05, // Lowered even further to prevent creative hallucinations
+        temperature: 0.05, 
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: code }
@@ -121,21 +117,15 @@ Format:
   }
 
   function parseJSON(raw) {
-    const clean = raw
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/```\s*$/i, '')
-      .trim();
-    try {
-      return JSON.parse(clean);
-    } catch {
+    const clean = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+    try { return JSON.parse(clean); } 
+    catch {
       const m = clean.match(/\{[\s\S]*\}/);
       if (m) return JSON.parse(m[0]);
       return { stdout: '', stderr: 'Failed to simulate execution output.', exitCode: 1 };
     }
   }
 
-  // ── UI: update stdin panel based on code ──────────────────────────────
   function updateStdinPanel(code, lang) {
     const needs   = detectsInput(code, lang);
     const hint    = document.getElementById('stdinHint');
@@ -148,7 +138,6 @@ Format:
       hint.textContent = '• Input detected';
       hint.classList.add('visible');
       tips.textContent = INPUT_TIPS[lang] || 'Provide one input value per line';
-      // Auto-expand if collapsed
       const body = document.getElementById('stdinBody');
       const btn  = document.getElementById('stdinToggle');
       if (body && body.classList.contains('hidden')) {
@@ -162,7 +151,6 @@ Format:
     }
   }
 
-  // ── RENDER: loading ───────────────────────────────────────────────────
   function renderRunning() {
     const shell = document.getElementById('outputShell');
     shell.innerHTML = `<div class="loading-clay"><div class="spin"></div><span>Simulating execution…</span></div>`;
@@ -172,7 +160,6 @@ Format:
     if (time)   time.textContent = '';
   }
 
-  // ── RENDER: result ────────────────────────────────────────────────────
   function renderResult(result) {
     const shell  = document.getElementById('outputShell');
     const status = document.getElementById('runStatus');
@@ -183,7 +170,6 @@ Format:
     const hasErr = result.stderr.trim();
     const hasIn  = result.stdinUsed && result.stdinUsed.trim();
 
-    // ── Show stdin echo if used ──
     if (hasIn) {
       const lbl = mk('span', 'output-section-label is-stdin');
       lbl.textContent = '⌨ stdin provided';
@@ -197,7 +183,6 @@ Format:
       });
     }
 
-    // ── Stdout ──
     if (hasOut) {
       const lbl = mk('span', 'output-section-label is-stdout');
       lbl.textContent = '▶ output';
@@ -210,7 +195,6 @@ Format:
       });
     }
 
-    // ── Stderr ──
     if (hasErr) {
       const lbl = mk('span', 'output-section-label is-stderr');
       lbl.textContent = '⚠ stderr / compile error';
@@ -224,21 +208,18 @@ Format:
       });
     }
 
-    // ── No output at all ──
     if (!hasOut && !hasErr) {
       const el = mk('span', 'output-line output-success');
       el.textContent = '✓ Exited cleanly with no output';
       shell.appendChild(el);
     }
 
-    // ── Meta bar ──
     const meta = mk('span', 'output-line output-meta');
     const exitOk = result.exitCode === 0;
     const exitLabel = exitOk ? '✓ exit 0' : `✗ exit ${result.exitCode}`;
     meta.textContent = `${result.language} ${result.version}  ·  ${exitLabel}  ·  ${result.time}ms`;
     shell.appendChild(meta);
 
-    // ── Status bar ──
     if (status) {
       status.textContent = exitOk ? '✓ Success' : `✗ Exit ${result.exitCode}`;
       status.style.color = exitOk ? 'var(--green)' : 'var(--red)';
@@ -246,7 +227,6 @@ Format:
     if (time) time.textContent = result.time + 'ms';
   }
 
-  // ── RENDER: error ─────────────────────────────────────────────────────
   function renderError(msg) {
     const shell  = document.getElementById('outputShell');
     const status = document.getElementById('runStatus');
@@ -260,14 +240,12 @@ Format:
     if (status) { status.textContent = '✗ Error'; status.style.color = 'var(--red)'; }
   }
 
-  // ── Helper ────────────────────────────────────────────────────────────
   function mk(tag, cls) {
     const el = document.createElement(tag);
     el.className = cls;
     return el;
   }
 
-  // ── STDIN toggle wiring (called from app.js init) ─────────────────────
   function initStdinToggle() {
     const header = document.querySelector('.stdin-header');
     const body   = document.getElementById('stdinBody');
